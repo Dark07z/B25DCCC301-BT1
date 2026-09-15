@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Máy tính</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="calculator">
+      <h1>Máy tính cầm tay</h1>
+
+      <div class="display" id="display" aria-live="polite">0</div>
+
+      <div class="keypad">
+        <button class="btn number" type="button" data-value="7">7</button>
+        <button class="btn number" type="button" data-value="8">8</button>
+        <button class="btn number" type="button" data-value="9">9</button>
+        <button class="btn operator" type="button" data-value="/">/</button>
+
+        <button class="btn number" type="button" data-value="4">4</button>
+        <button class="btn number" type="button" data-value="5">5</button>
+        <button class="btn number" type="button" data-value="6">6</button>
+        <button class="btn operator" type="button" data-value="*">*</button>
+
+        <button class="btn number" type="button" data-value="1">1</button>
+        <button class="btn number" type="button" data-value="2">2</button>
+        <button class="btn number" type="button" data-value="3">3</button>
+        <button class="btn operator" type="button" data-value="-">-</button>
+
+        <button class="btn number" type="button" data-value="0">0</button>
+        <button class="btn clear" type="button" data-action="clear">Clear</button>
+        <button class="btn operator" type="button" data-value="+">+</button>
+        <button class="btn equals" type="button" data-action="equals">=</button>
+      </div>
+    </main>
+
+    <script>
+      const display = document.getElementById('display');
+      const buttons = document.querySelectorAll('button');
+
+      let currentInput = '0';
+      let storedValue = null;
+      let operator = null;
+      let waitingForSecondOperand = false;
+
+      function updateDisplay() {
+        display.textContent = currentInput;
+      }
+
+      function calculate(first, second, operation) {
+        switch (operation) {
+          case '+':
+            return first + second;
+          case '-':
+            return first - second;
+          case '*':
+            return first * second;
+          case '/':
+            return second === 0 ? 'Error' : first / second;
+          default:
+            return second;
+        }
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const value = button.dataset.value;
+          const action = button.dataset.action;
+
+          if (button.classList.contains('number')) {
+            if (waitingForSecondOperand) {
+              currentInput = value;
+              waitingForSecondOperand = false;
+            } else {
+              currentInput = currentInput === '0' ? value : currentInput + value;
+            }
+            updateDisplay();
+            return;
+          }
+
+          if (action === 'clear') {
+            currentInput = '0';
+            storedValue = null;
+            operator = null;
+            waitingForSecondOperand = false;
+            updateDisplay();
+            return;
+          }
+
+          if (action === 'equals') {
+            if (operator && !waitingForSecondOperand) {
+              const first = storedValue;
+              const second = Number(currentInput);
+              const result = calculate(first, second, operator);
+
+              currentInput = String(result);
+              storedValue = null;
+              operator = null;
+              waitingForSecondOperand = false;
+              updateDisplay();
+            }
+            return;
+          }
+
+          if (value) {
+            if (storedValue === null) {
+              storedValue = Number(currentInput);
+            } else if (operator) {
+              const first = storedValue;
+              const second = Number(currentInput);
+              const result = calculate(first, second, operator);
+              currentInput = String(result);
+              storedValue = Number(currentInput);
+            }
+
+            operator = value;
+            waitingForSecondOperand = true;
+            updateDisplay();
+          }
+        });
+      });
+
+      updateDisplay();
+    </script>
+  </body>
+</html>
